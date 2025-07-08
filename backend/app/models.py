@@ -1,18 +1,18 @@
-import datetime
-import enum
-
-from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, Integer, String, Table
+from sqlalchemy import (
+    Boolean, Column, DateTime, Enum, Float, ForeignKey,
+    Integer, String, Table, UniqueConstraint
+)
 from sqlalchemy.orm import declarative_base, relationship
+import enum
+import datetime
 
 Base = declarative_base()
 
-# Enumération des rôles
 class RoleEnum(enum.Enum):
     gestionnaire = "gestionnaire"
     employe = "employe"
     responsable = "responsable"
 
-# Association pour rapport <-> produit (many-to-many)
 rapport_product_assoc = Table(
     'rapport_product_assoc', Base.metadata,
     Column('rapport_id', Integer, ForeignKey('rapport_tendance.id')),
@@ -26,7 +26,6 @@ class Utilisateur(Base):
     role = Column(Enum(RoleEnum), nullable=False)
     mot_de_passe = Column(String, nullable=False)
     magasin_id = Column(Integer, ForeignKey('magasins.id'), nullable=True)
-    is_maison_mere = Column(Boolean, default=False)
 
     magasin = relationship("Magasin", back_populates="utilisateurs")
 
@@ -35,20 +34,14 @@ class Magasin(Base):
     id = Column(Integer, primary_key=True)
     nom = Column(String, nullable=False)
     region = Column(String, nullable=False)
-    maison_mere_id = Column(Integer, ForeignKey('magasin_maison_mere.id'))
+    is_maison_mere = Column(Boolean, default=False)
+    maison_mere_id = Column(Integer, ForeignKey('magasins.id'), nullable=True)
 
     ventes = relationship("Vente", back_populates="magasin")
-    reapprovisionnements = relationship("Reapprovisionnement", back_populates="magasin")
+    produit_par_magasin = relationship("ProduitParMagasin", back_populates="magasin")
     utilisateurs = relationship("Utilisateur", back_populates="magasin")
-    maison_mere = relationship("MagasinMaisonMere", back_populates="magasins")
-
-class MagasinMaisonMere(Base):
-    __tablename__ = 'magasin_maison_mere'
-    id = Column(Integer, primary_key=True)
-    nom = Column(String, nullable=False)
-    adresse = Column(String, nullable=False)
-
-    magasins = relationship("Magasin", back_populates="maison_mere")
+    maison_mere = relationship("Magasin", remote_side=[id], backref="magasins_filles")
+    reaprovisionnements = relationship("Reaprovisionnement", back_populates="magasin")
 
 class Product(Base):
     __tablename__ = 'products'
@@ -59,10 +52,11 @@ class Product(Base):
     stock = Column(Integer, default=0)
 
     ventes = relationship("Vente", back_populates="produit")
-    reapprovisionnements = relationship("Reapprovisionnement", back_populates="produit")
-    alertes = relationship("AlerteRupture", back_populates="produit")
+    produit_par_magasin = relationship("ProduitParMagasin", back_populates="produit")
     rapports = relationship("RapportTendance", secondary=rapport_product_assoc, back_populates="produits")
     stock_central = relationship("StockCentral", back_populates="produit", uselist=False)
+    alertes = relationship("AlerteRupture", back_populates="produit")
+    reaprovisionnements = relationship("Reaprovisionnement", back_populates="produit")
 
 class Vente(Base):
     __tablename__ = 'ventes'
@@ -85,24 +79,19 @@ class RapportTendance(Base):
 
     produits = relationship("Product", secondary=rapport_product_assoc, back_populates="rapports")
 
-class Reapprovisionnement(Base):
-    __tablename__ = 'reapprovisionnements'
+class ProduitParMagasin(Base):
+    __tablename__ = 'produit_par_magasin'
     id = Column(Integer, primary_key=True)
     produit_id = Column(Integer, ForeignKey('products.id'), nullable=False)
     magasin_id = Column(Integer, ForeignKey('magasins.id'), nullable=False)
     quantite = Column(Integer, nullable=False)
-    statut = Column(String, nullable=False)
 
-    produit = relationship("Product", back_populates="reapprovisionnements")
-    magasin = relationship("Magasin", back_populates="reapprovisionnements")
+    __table_args__ = (
+        UniqueConstraint('produit_id', 'magasin_id', name='uq_produit_magasin'),
+    )
 
-class AlerteRupture(Base):
-    __tablename__ = 'alerte_rupture'
-    id = Column(Integer, primary_key=True)
-    produit_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    niveau_stock = Column(Integer, nullable=False)
-
-    produit = relationship("Product", back_populates="alertes")
+    produit = relationship("Product", back_populates="produit_par_magasin")
+    magasin = relationship("Magasin", back_populates="produit_par_magasin")
 
 class StockCentral(Base):
     __tablename__ = 'stock_central'
@@ -112,3 +101,23 @@ class StockCentral(Base):
 
     produit = relationship("Product", back_populates="stock_central")
 
+class Reaprovisionnement(Base):
+    __tablename__ = "reaprovisionnement"
+    id = Column(Integer, primary_key=True)
+    produit_id = Column(Integer, ForeignKey('products.id'), nullable=False)
+    magasin_id = Column(Integer, ForeignKey('magasins.id'), nullable=False)
+    quantite = Column(Integer, nullable=False)
+    approuved = Column(Boolean, nullable=True, default=None)
+
+    produit = relationship("Product", back_populates="reaprovisionnements")
+    magasin = relationship("Magasin", back_populates="reaprovisionnements")
+
+# Alerte Rupture
+class AlerteRupture(Base):
+    __tablename__ = 'alertes_rupture'
+    id = Column(Integer, primary_key=True)
+    produit_id = Column(Integer, ForeignKey('products.id'), unique=True)
+    seuil = Column(Integer, nullable=False)
+    regler = Column(Boolean, default=False)
+
+    produit = relationship("Product", back_populates="alertes")

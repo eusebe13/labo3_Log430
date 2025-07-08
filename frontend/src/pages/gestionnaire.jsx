@@ -1,32 +1,116 @@
-import { useState } from 'react';
+import React, { useEffect, useState } from "react";
+import {
+  getRapportConsolide,
+  getDashboard,
+  getRapports,
+  creerRapportPourRegion,
+} from "../api/gestionnaire";
 
 const Gestionnaire = () => {
-  const [output, setOutput] = useState('');
+  const [rapportConsolide, setRapportConsolide] = useState(null);
+  const [dashboard, setDashboard] = useState(null);
+  const [rapports, setRapports] = useState([]);
+  const [region, setRegion] = useState("");
+  const [message, setMessage] = useState("");
 
-  const ajouterProduit = () => {
-    setOutput("Entrez les détails du produit à ajouter (nom, prix, stock) :");
+  // Chargement initial des données
+  useEffect(() => {
+    fetchRapportConsolide();
+    fetchDashboard();
+    fetchRapports();
+  }, []);
+
+  const fetchRapportConsolide = async () => {
+    const data = await getRapportConsolide();
+    setRapportConsolide(data);
   };
 
-  const supprimerProduit = () => {
-    setOutput("Entrez l'ID du produit à supprimer :");
+  const fetchDashboard = async () => {
+    const data = await getDashboard();
+    setDashboard(data);
   };
 
-  const consulterProduits = async () => {
-    setOutput("Chargement des produits...");
+  const fetchRapports = async () => {
+    const data = await getRapports();
+    setRapports(data);
+  };
+
+  const handleCreerRapport = async () => {
+    if (!region.trim()) {
+      setMessage("Veuillez saisir une région.");
+      return;
+    }
+    const result = await creerRapportPourRegion(region.trim());
+    if (result && result.message) {
+      setMessage(result.message);
+      setRegion("");
+      fetchRapports();
+    } else {
+      setMessage("Erreur lors de la création du rapport.");
+    }
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">Interface Gestionnaire</h2>
-      <div className="space-x-4 mb-4">
-        <button onClick={ajouterProduit} className="bg-green-600 text-white px-4 py-2 rounded">Ajouter un produit</button>
-        <button onClick={supprimerProduit} className="bg-red-500 text-white px-4 py-2 rounded">Supprimer un produit</button>
-        <button onClick={consulterProduits} className="bg-blue-500 text-white px-4 py-2 rounded">Voir les produits</button>
-      </div>
-      <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap">{output}</pre>
+    <div className="p-6 max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Espace Gestionnaire</h1>
+
+      {/* Rapport consolidé */}
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Rapport consolidé des ventes</h2>
+        {!rapportConsolide ? (
+          <p>Chargement...</p>
+        ) : (
+          <pre className="bg-gray-100 p-4 rounded max-h-72 overflow-auto whitespace-pre-wrap">
+            {JSON.stringify(rapportConsolide, null, 2)}
+          </pre>
+        )}
+      </section>
+
+      {/* Tableau de bord indicateurs */}
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Indicateurs clés</h2>
+        {!dashboard ? (
+          <p>Chargement...</p>
+        ) : (
+          <pre className="bg-gray-100 p-4 rounded max-h-72 overflow-auto whitespace-pre-wrap">
+            {JSON.stringify(dashboard, null, 2)}
+          </pre>
+        )}
+      </section>
+
+      {/* Rapports enregistrés */}
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Rapports enregistrés</h2>
+        {rapports.length === 0 ? (
+          <p>Aucun rapport trouvé.</p>
+        ) : (
+          <ul className="list-disc list-inside mb-4">
+            {rapports.map((r) => (
+              <li key={r.id}>
+                Région : <strong>{r.region}</strong> - Total Ventes : {r.total_ventes}
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Nom de la région"
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
+            className="border rounded px-2 py-1 flex-grow"
+          />
+          <button
+            onClick={handleCreerRapport}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Créer un rapport
+          </button>
+        </div>
+        {message && <p className="mt-2 text-red-600">{message}</p>}
+      </section>
     </div>
   );
 };
-  
-  export default Gestionnaire;
-  
+
+export default Gestionnaire;

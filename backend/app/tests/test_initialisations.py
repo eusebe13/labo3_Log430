@@ -1,20 +1,20 @@
 import os
 import sys
+
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 # Import depuis app/
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from database import SessionLocal
-from models import Base, Product, Utilisateur, Magasin
-from initialiser_items import init_products, init_users, init_magasins, init_test
+from initialiser_items import init_magasins, init_products, init_users
+from models import Base, Magasin, Product, Utilisateur
+
 
 @pytest.fixture(scope="function", autouse=True)
 def setup_database():
     engine = create_engine("sqlite:///:memory:")
-    TestingSessionLocal = sessionmaker(bind=engine)
     SessionLocal.configure(bind=engine)
     Base.metadata.create_all(engine)
     yield

@@ -1,68 +1,111 @@
 import { useState } from 'react';
-import { consulterProduits, acheterProduits, verifierStock } from '../api/employe';
+import {
+  consulterProduits,
+  acheterProduits,
+  verifierStock,
+  consulterStockCentral,
+  consulterProduitsParMagasin,
+  reapprovisionnerMagasin
+} from '../api/employe';
 
 const Employe = () => {
   const [output, setOutput] = useState('Testez les fonctionnalités ci-dessous');
 
-  const afficher = async () => {
-    try {
-      const response = consulterProduits() // await fetch("http://localhost:8000/produits");
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
-      }
-  
-      const produits = await response.json();
-  
-      if (produits.length > 0) {
-        setOutput(
-          produits
-            .map(p => `${p.id} - ${p.name} (${p.category}) : ${p.price}$, Stock: ${p.stock}`)
-            .join('\n')
-        );
-      } else {
-        setOutput("Aucun produit disponible.");
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'appel à l'API:", error);
-      setOutput("Erreur lors de la récupération des produits.");
+  const afficherProduits = async () => {
+    const produits = await consulterProduits();
+    if (produits.length > 0) {
+      setOutput(
+        produits.map(p => `${p.id} - ${p.name} (${p.category}) : ${p.price}$`).join('\n')
+      );
+    } else {
+      setOutput("Aucun produit disponible.");
     }
   };
 
   const acheter = async () => {
-    const ids = prompt("IDs des produits séparés par une virgule :");
-    const idList = ids.split(',').map(id => parseInt(id.trim(), 10));
-    const total = await acheterProduits(idList);
-    setOutput(`Vente enregistrée. Total = ${total}$`);
-  };
+    const magasinId = prompt("ID du magasin :");
+    const input = prompt("Produits à acheter (ex: 1-2,3-1 pour acheter 2x id=1, 1x id=3)");
+    const liste = input.split(',').map(pair => {
+      const [id, q] = pair.split('-');
+      return { produit_id: parseInt(id.trim(), 10), quantite: parseInt(q.trim(), 10) };
+    });
 
-  const verifier = async () => {
-    const id = prompt("Entrez l'ID du produit (ou laissez vide pour tout voir) :");
-    const stock = await verifierStock(id ? parseInt(id, 10) : null);
-    if (Array.isArray(stock)) {
-      setOutput(stock.map(s => `${s.id} - ${s.name} : ${s.stock} en stock`).join('\n'));
+    const result = await acheterProduits(parseInt(magasinId), liste);
+    if (result?.resultats) {
+      setOutput(result.resultats.join('\n'));
     } else {
-      setOutput(`${stock.name} : ${stock.stock} en stock`);
+      setOutput("Erreur ou aucun achat effectué.");
     }
   };
 
+  const verifierStockProduit = async () => {
+    const produitId = prompt("ID du produit :");
+    const magasinId = prompt("ID du magasin :");
+    const stock = await verifierStock(parseInt(produitId), parseInt(magasinId));
+    if (stock?.quantite !== undefined) {
+      setOutput(`${stock.produit} (${stock.magasin}) : ${stock.quantite} en stock`);
+    } else {
+      setOutput(stock?.message || "Stock introuvable.");
+    }
+  };
+
+  const afficherStockParMagasin = async () => {
+    const magasinId = prompt("ID du magasin :");
+    const result = await consulterProduitsParMagasin(parseInt(magasinId));
+    if (Array.isArray(result)) {
+      setOutput(result.map(p => `${p.produit} : ${p.quantite}`).join('\n'));
+    } else {
+      setOutput(result.message || "Erreur.");
+    }
+  };
+
+  const afficherStockCentral = async () => {
+    const data = await consulterStockCentral();
+    if (Array.isArray(data)) {
+      setOutput(data.map(p => `${p.id} - ${p.name} (${p.category}) : ${p.stock_central} en stock central`).join('\n'));
+    } else {
+      setOutput("Erreur lors de la récupération du stock central.");
+    }
+  };
+
+  const envoyerDemandeReapprovisionnement = async () => {
+    const produitId = prompt("ID du produit :");
+    const quantite = prompt("Quantité demandée :");
+    const magasinId = prompt("ID du magasin :");
+    const res = await reapprovisionnerMagasin(produitId, quantite, magasinId);
+    setOutput(res?.message || "Demande effectuée.");
+  };
+  
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Bienvenue Employé</h1>
-      <div className="space-x-4 mb-4">
-        <button onClick={afficher} className="bg-blue-500 text-white px-4 py-2 rounded">
-          Afficher les produits
+    <div className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Espace Employé</h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <button onClick={afficherProduits} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded shadow">
+          📦 Afficher tous les produits
         </button>
-        <button onClick={acheter} className="bg-green-500 text-white px-4 py-2 rounded">
-          Acheter un produit
+        <button onClick={acheter} className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded shadow">
+          🛒 Acheter des produits
         </button>
-        <button onClick={verifier} className="bg-yellow-500 text-black px-4 py-2 rounded">
-          Vérifier le stock
+        <button onClick={verifierStockProduit} className="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-3 rounded shadow">
+          🔍 Vérifier le stock d’un produit
+        </button>
+        <button onClick={afficherStockParMagasin} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded shadow">
+          🏪 Stock par magasin
+        </button>
+        <button onClick={afficherStockCentral} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded shadow">
+          🏬 Voir le stock central
+        </button>
+        <button onClick={envoyerDemandeReapprovisionnement} className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded shadow">
+          🚚 Demander un réapprovisionnement
         </button>
       </div>
-      <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap">{output}</pre>
+
+      <pre className="bg-gray-100 p-4 rounded shadow whitespace-pre-wrap min-h-[150px]">
+        {output}
+      </pre>
     </div>
   );
 };
-  
-  export default Employe;
-  
+
+export default Employe;

@@ -1,105 +1,73 @@
-from database import SessionLocal
-from menu import menu_employe, menu_gestionnaire, menu_responsable
-from models import Magasin, Product, RoleEnum, Utilisateur
+import random
+from sqlalchemy.orm import Session
+from app.database import SessionLocal
+from app.models import (
+    Base, Utilisateur, Magasin, Product, StockCentral, ProduitParMagasin, RoleEnum
+)
 
+def init_data():
+    session: Session = SessionLocal()
 
-def init_products():
-    session = SessionLocal()
-    try:
-        if session.query(Product).count() == 0:
-            for i in range(20):
-                produit = Product(
-                    name=f"Produit{i + 1}",
-                    category="CatégorieA" if i % 2 == 0 else "CatégorieB",
-                    price=10.0 + i,
-                    stock=(i + 1) * 2
-                )
-                session.add(produit)
-            session.commit()
-            print("Produits initiaux créés.")
-        else:
-            print("Produits déjà présents.")
-    finally:
+    if session.query(Magasin).count() > 0:
+        print(" Données déjà présentes. Ignoré.")
         session.close()
+        return
 
+    # MAISON MÈRE
+    maison_mere = Magasin(nom="Magasin Central", region="QC", is_maison_mere=True)
+    session.add(maison_mere)
+    session.commit()
 
-def init_users():
-    session = SessionLocal()
-    try:
-        if session.query(Utilisateur).count() == 0:
-            magasin = session.query(Magasin).first()
-            if not magasin:
-                magasin = Magasin(nom="Magasin Central", region="Région A")
-                session.add(magasin)
-                session.commit()
+    # 2 MAGASINS SECONDAIRES
+    magasin1 = Magasin(nom="Magasin Laval", region="QC", maison_mere_id=maison_mere.id)
+    magasin2 = Magasin(nom="Magasin Montréal", region="QC", maison_mere_id=maison_mere.id)
+    session.add_all([magasin1, magasin2])
+    session.commit()
 
-            users = [
-                Utilisateur(
-                    nom="employe1",
-                    mot_de_passe="1234",
-                    role=RoleEnum.employe,
-                    magasin_id=magasin.id
-                ),
-                Utilisateur(
-                    nom="gestionnaire1",
-                    mot_de_passe="admin",
-                    role=RoleEnum.gestionnaire,
-                    magasin_id=magasin.id
-                ),
-                Utilisateur(
-                    nom="responsable1",
-                    mot_de_passe="root",
-                    role=RoleEnum.responsable,
-                    magasin_id=magasin.id,
-                    is_maison_mere=True
-                )
-            ]
-            session.add_all(users)
-            session.commit()
-            print("Utilisateurs initiaux créés.")
-        else:
-            print("Utilisateurs déjà présents.")
-    finally:
-        session.close()
+    # UTILISATEURS
+    users = [
+        Utilisateur(nom="Alice", role=RoleEnum.gestionnaire, mot_de_passe="pass123", magasin_id=magasin1.id),
+        Utilisateur(nom="Bob", role=RoleEnum.employe, mot_de_passe="pass123", magasin_id=magasin1.id),
+        Utilisateur(nom="Charlie", role=RoleEnum.responsable, mot_de_passe="pass123", magasin_id=maison_mere.id)
+    ]
+    session.add_all(users)
 
+    # 20 PRODUITS
+    categories = ["Fruit", "legumes", "electronique", "vetements", "meubles", "jouets", "livres", "beauté", "sport", "alimentation", "laitier"]
+    produits = []
+    for i in range(1, 21):
+        p = Product(
+            name=f"Produit {i}",
+            category=random.choice(categories),
+            price=round(random.uniform(5, 100), 2),
+            stock=0  # On gère le stock dans StockCentral et ProduitParMagasin
+        )
+        produits.append(p)
+    session.add_all(produits)
+    session.commit()
 
-def init_magasins():
-    session = SessionLocal()
-    try:
-        if session.query(Magasin).count() == 0:
-            magasins = [
-                Magasin(nom="Magasin Central", region="Région A"),
-                Magasin(nom="Magasin Nord", region="Région B"),
-                Magasin(nom="Magasin Sud", region="Région C")
-            ]
-            session.add_all(magasins)
-            session.commit()
-            print("Magasins initiaux créés.")
-        else:
-            print("Magasins déjà présents.")
-    finally:
-        session.close()
+    # STOCK CENTRAL
+    stocks_centrals = []
+    for produit in produits:
+        stock = StockCentral(produit_id=produit.id, quantite=random.randint(30, 100))
+        stocks_centrals.append(stock)
+    session.add_all(stocks_centrals)
 
+    # STOCKS EN MAGASINS
+    stocks_magasin = []
+    for produit in produits:
+        stocks_magasin.append(ProduitParMagasin(
+            produit_id=produit.id,
+            magasin_id=magasin1.id,
+            quantite=random.randint(0, 20)
+        ))
+        stocks_magasin.append(ProduitParMagasin(
+            produit_id=produit.id,
+            magasin_id=magasin2.id,
+            quantite=random.randint(0, 20)
+        ))
+    session.add_all(stocks_magasin)
 
-def init_test():
-    print("=== Connexion ===")
-    nom = input("Nom d'utilisateur : ")
-    mdp = input("Mot de passe : ")
-
-    session = SessionLocal()
-    try:
-        utilisateur = session.query(Utilisateur).filter_by(nom=nom, mot_de_passe=mdp).first()
-        if utilisateur:
-            print(f"Bienvenue {utilisateur.nom} ({utilisateur.role.value})")
-            if utilisateur.role == RoleEnum.employe:
-                menu_employe()
-            elif utilisateur.role == RoleEnum.gestionnaire:
-                menu_gestionnaire()
-            elif utilisateur.role == RoleEnum.responsable:
-                menu_responsable()
-            else:
-                print("Rôle non reconnu.")
-        else:
-            print("Nom ou mot de passe incorrect.")
-    finally:
-        session.close()
+    session.commit()
+    session.close()
+    print(" Données initiales insérées.")
