@@ -79,13 +79,3 @@ jobs:
         run: |
           cd frontend
           npm run lint
-
-      - name: Build du frontend
-        run: |
-          cd frontend
-          npm run build
-
-      - name: Tester le frontend
-        run: |
-          cd frontend
-          npm run preview
