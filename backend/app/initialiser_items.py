@@ -1,9 +1,17 @@
 import random
+
 from sqlalchemy.orm import Session
+
 from app.database import SessionLocal
 from app.models import (
-    Base, Utilisateur, Magasin, Product, StockCentral, ProduitParMagasin, RoleEnum
+    Magasin,
+    Product,
+    ProduitParMagasin,
+    RoleEnum,
+    StockCentral,
+    Utilisateur,
 )
+
 
 def init_data():
     session: Session = SessionLocal()

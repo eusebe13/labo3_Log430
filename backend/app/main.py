@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.auth import router as auth_router
+from app.database import engine
+
 #from app.api.routes import router  # ou directement tes endpoints
 from app.employe import router as employe_router
 from app.gestionnaire import router as gestionnaire_router
-from app.responsable import router as responsable_router
-from app.auth import router as auth_router
 from app.models import Base
-from app.database import engine
+from app.responsable import router as responsable_router
 
 Base.metadata.create_all(bind=engine)
 

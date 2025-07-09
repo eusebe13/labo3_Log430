@@ -1,14 +1,15 @@
 # app/auth.py
-from fastapi import APIRouter, HTTPException, Depends, status, FastAPI
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
 
+from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
+from sqlalchemy.orm import Session
+
+from app.database import SessionLocal
 from app.models import Utilisateur
 from app.schemas import ConnexionRequest
-from app.database import SessionLocal
 
 router = APIRouter()
 

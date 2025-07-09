@@ -7,13 +7,14 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  ci-cd:
     runs-on: ubuntu-latest
 
     services:
       postgres:
         image: postgres:15
-        ports: [5432:5432]
+        ports:
+          - 5432:5432
         env:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
@@ -28,46 +29,63 @@ jobs:
       DATABASE_URL: postgresql://user:password@localhost:5432/app_db
 
     steps:
-      - name: Checkout code
+      - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      ## === BACKEND === ##
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install backend dependencies
+      - name: Installer les dépendances backend
         run: |
           cd backend
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Initialise DB
+      - name: Linter backend avec Ruff
         run: |
           cd backend
-          python app/init_db.py
+          ruff check .
 
-      - name: Run backend tests (optional)
+      - name: Tester le backend
         run: |
           cd backend
           pytest
 
-      - name: Set up Node.js
+      - name: Initialiser la base de données
+        run: |
+          cd backend
+          python app/init_db.py
+
+      - name: Lancer le backend avec Uvicorn (non-bloquant)
+        run: |
+          cd backend
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+
+      ## === FRONTEND === ##
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install frontend dependencies
+      - name: Installer les dépendances frontend
         run: |
           cd frontend
           npm ci
 
-      - name: Build frontend
+      - name: Linter le frontend
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Build du frontend
         run: |
           cd frontend
           npm run build
 
-      #- name: Run frontend tests (optional)
-      #  run: |
-      #    cd frontend
-      #    npm run test  # remplace par "npm run vitest" ou autre si nécessaire
+      - name: Tester le frontend
+        run: |
+          cd frontend
+          npm run preview

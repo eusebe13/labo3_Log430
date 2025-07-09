@@ -1,8 +1,9 @@
 from typing import Dict, List
 
 from fastapi import APIRouter, Body, HTTPException
+
 from app.database import SessionLocal
-from app.models import Magasin, Product, ProduitParMagasin, Vente, StockCentral, Reaprovisionnement
+from app.models import Magasin, Product, ProduitParMagasin, Reaprovisionnement, Vente
 
 router = APIRouter()
 

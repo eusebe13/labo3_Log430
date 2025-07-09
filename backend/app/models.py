@@ -1,10 +1,19 @@
+import datetime
+import enum
+
 from sqlalchemy import (
-    Boolean, Column, DateTime, Enum, Float, ForeignKey,
-    Integer, String, Table, UniqueConstraint
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import declarative_base, relationship
-import enum
-import datetime
 
 Base = declarative_base()
 

@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import func, extract
-from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 
+from fastapi import APIRouter, Depends
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
 from app.database import SessionLocal
-from app.models import Product, RapportTendance, Vente, Magasin, ProduitParMagasin, StockCentral
-from app.schemas import RapportCreate, UpdateChampProduit
+from app.models import Magasin, Product, ProduitParMagasin, RapportTendance, StockCentral, Vente
+from app.schemas import RapportCreate
 
 router = APIRouter()
 
