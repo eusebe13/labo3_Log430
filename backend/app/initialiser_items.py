@@ -26,9 +26,9 @@ def init_data():
 
     # UTILISATEURS
     users = [
-        Utilisateur(nom="Alice", role=RoleEnum.gestionnaire, mot_de_passe="pass123", magasin_id=magasin1.id),
-        Utilisateur(nom="Bob", role=RoleEnum.employe, mot_de_passe="pass123", magasin_id=magasin1.id),
-        Utilisateur(nom="Charlie", role=RoleEnum.responsable, mot_de_passe="pass123", magasin_id=maison_mere.id)
+        Utilisateur(nom="Alice", role=RoleEnum.gestionnaire, mot_de_passe="admin", magasin_id=magasin1.id),
+        Utilisateur(nom="Bob", role=RoleEnum.employe, mot_de_passe="1234", magasin_id=magasin1.id),
+        Utilisateur(nom="Charlie", role=RoleEnum.responsable, mot_de_passe="root", magasin_id=maison_mere.id)
     ]
     session.add_all(users)
 

@@ -7,6 +7,7 @@ import {
   consulterProduitsParMagasin,
   reapprovisionnerMagasin
 } from '../api/employe';
+import Header from '../components/header';
 
 const Employe = () => {
   const [output, setOutput] = useState('Testez les fonctionnalités ci-dessous');
@@ -77,27 +78,29 @@ const Employe = () => {
   };
   
   return (
+    <>
+    <Header />
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Espace Employé</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <button onClick={afficherProduits} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded shadow">
-          📦 Afficher tous les produits
+          Afficher tous les produits
         </button>
         <button onClick={acheter} className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded shadow">
-          🛒 Acheter des produits
+          Acheter des produits
         </button>
         <button onClick={verifierStockProduit} className="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-3 rounded shadow">
-          🔍 Vérifier le stock d’un produit
+          Vérifier le stock d’un produit
         </button>
         <button onClick={afficherStockParMagasin} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded shadow">
-          🏪 Stock par magasin
+          Stock par magasin
         </button>
         <button onClick={afficherStockCentral} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded shadow">
-          🏬 Voir le stock central
+          Voir le stock central
         </button>
         <button onClick={envoyerDemandeReapprovisionnement} className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded shadow">
-          🚚 Demander un réapprovisionnement
+          Demander un réapprovisionnement
         </button>
       </div>
 
@@ -105,6 +108,7 @@ const Employe = () => {
         {output}
       </pre>
     </div>
+    </>
   );
 };
 

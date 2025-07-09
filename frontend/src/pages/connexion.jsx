@@ -1,46 +1,72 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockLogin } from '../api/auth';
+import { login } from '../api/auth';
 
 const Connexion = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [nom, setNom] = useState('');
+  const [motDePasse, setMotDePasse] = useState('');
+  const [erreur, setErreur] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleConnexion = async (e) => {
     e.preventDefault();
-    const user = await mockLogin(username, password);
-    if (user) {
-      navigate(`/${user.role}`);
+    setErreur('');
+
+    const result = await login(nom, motDePasse);
+
+    if (result.success) {
+      switch (result.role) {
+        case 'employe':
+          navigate('/employe');
+          break;
+        case 'gestionnaire':
+          navigate('/gestionnaire');
+          break;
+        case 'responsable':
+          navigate('/responsable');
+          break;
+        default:
+          setErreur("Rôle inconnu.");
+      }
     } else {
-      setError("Nom d'utilisateur ou mot de passe incorrect.");
+      setErreur(result.message || "Échec de la connexion.");
     }
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto mt-20 bg-white rounded-xl shadow-md">
-      <h1 className="text-xl font-bold mb-4">Connexion</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Nom d'utilisateur"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="block w-full p-2 mb-4 border rounded"
-        />
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="block w-full p-2 mb-4 border rounded"
-        />
-        {error && <p className="text-red-500 mb-2">{error}</p>}
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-          Se connecter
-        </button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="max-w-md w-full bg-white p-8 rounded shadow">
+        <h2 className="text-2xl font-bold mb-6 text-center">Connexion</h2>
+        <form onSubmit={handleConnexion} className="space-y-4">
+          <div>
+            <label className="block mb-1 font-medium">Nom d'utilisateur</label>
+            <input
+              type="text"
+              value={nom}
+              onChange={(e) => setNom(e.target.value)}
+              className="w-full border px-3 py-2 rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Mot de passe</label>
+            <input
+              type="password"
+              value={motDePasse}
+              onChange={(e) => setMotDePasse(e.target.value)}
+              className="w-full border px-3 py-2 rounded"
+              required
+            />
+          </div>
+          {erreur && <p className="text-red-500 text-sm">{erreur}</p>}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          >
+            Se connecter
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

@@ -9,6 +9,7 @@ import {
   getProduitsParMagasin,
   getAlertesRupture
 } from '../api/responsable';
+import Header from '../components/header';
 
 const Responsable = () => {
   const [stockCentral, setStockCentral] = useState([]);
@@ -46,6 +47,8 @@ const Responsable = () => {
   }, []);
 
   return (
+    <>
+    <Header />
     <div className="p-6 space-y-8">
       <h1 className="text-3xl font-bold">Espace Responsable</h1>
 
@@ -115,6 +118,7 @@ const Responsable = () => {
         </ul>
       </section>
     </div>
+    </>
   );
 };
 

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.employe import router as employe_router
 from app.gestionnaire import router as gestionnaire_router
 from app.responsable import router as responsable_router
+from app.auth import router as auth_router
 from app.models import Base
 from app.database import engine
 
@@ -29,6 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(employe_router, prefix="/employe", tags=["employe"])
-app.include_router(responsable_router, prefix="/responsable", tags=["responsable"])
-app.include_router(gestionnaire_router, prefix="/gestionnaire", tags=["gestionnaire"])
+app.include_router(auth_router, tags=["Authentification"])
+app.include_router(employe_router, prefix="/employe", tags=["Employe"])
+app.include_router(responsable_router, prefix="/responsable", tags=["Responsable"])
+app.include_router(gestionnaire_router, prefix="/gestionnaire", tags=["Gestionnaire"])

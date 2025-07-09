@@ -5,6 +5,7 @@ import {
   getRapports,
   creerRapportPourRegion,
 } from "../api/gestionnaire";
+import Header from "../components/header";
 
 const Gestionnaire = () => {
   const [rapportConsolide, setRapportConsolide] = useState(null);
@@ -51,6 +52,8 @@ const Gestionnaire = () => {
   };
 
   return (
+      <>
+      <Header />
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Espace Gestionnaire</h1>
 
@@ -110,6 +113,7 @@ const Gestionnaire = () => {
         {message && <p className="mt-2 text-red-600">{message}</p>}
       </section>
     </div>
+    </>
   );
 };
 

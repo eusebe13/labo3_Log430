@@ -143,7 +143,7 @@ def get_produits_par_magasin(magasin_id: int, db: Session = Depends(get_db)):
 
 @router.get("/alertes-rupture")
 def get_alertes_rupture(db: Session = Depends(get_db)):
-    alertes = db.query(alertesRupture).filter_by(regler=False).all()
+    alertes = db.query(AlerteRupture).filter_by(regler=False).all()
     return [
         {
             "id": a.id,

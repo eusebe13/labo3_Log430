@@ -1,6 +1,17 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Literal
 
+# ======= AUTHENTIFICATION =======
+
+class ConnexionRequest(BaseModel):
+    nom: str
+    mot_de_passe: str
+
+class ConnexionResponse(BaseModel):
+    message: str
+    nom: str
+    role: str
+    token: str
 
 # ======= PRODUIT =======
 
@@ -40,7 +51,9 @@ class AchatResponse(BaseModel):
 # ======= STOCK =======
 
 class StockMagasinResponse(BaseModel):
+    produit_id: int
     produit: str
+    magasin_id: int
     magasin: str
     quantite: int
 
@@ -62,6 +75,12 @@ class ReapprovisionnementRequest(BaseModel):
 class ReapprovisionnementResponse(BaseModel):
     message: str
 
+class ReapprovisionnementEtat(BaseModel):
+    id: int
+    produit: str
+    magasin: str
+    quantite: int
+    approuved: bool
 
 # ======= RAPPORTS =======
 
@@ -81,5 +100,13 @@ class RapportResponse(BaseModel):
 # ======= MISE À JOUR PRODUIT =======
 
 class UpdateChampProduit(BaseModel):
-    champ: str
+    champ: Literal["name", "price", "category"]  # ← Limité aux champs modifiables
     valeur: str
+
+# ======= ALERTES RUPTURE =======
+
+class AlerteRupture(BaseModel):
+    id: int
+    produit: str
+    seuil: int
+    regler: bool

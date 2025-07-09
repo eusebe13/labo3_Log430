@@ -114,13 +114,16 @@ test:
 ```
 
 connexion:
-	Nom d'utilisateur: employe1
+	{Employe}
+	Nom d'utilisateur: Bob
 	Mot de passe: 1234
 	
-	Nom d'utilisateur: gestionnaire1
+	{Gestionnaire}
+	Nom d'utilisateur: Alice
 	Mot de passe: admin
 	
-	Nom d'utilisateur: responsable1
+	{Responsable}
+	Nom d'utilisateur: Charlie
 	Mot de passe: root
 
 	Swagger UI est disponible ici :
