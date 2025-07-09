@@ -1,114 +1,192 @@
-# labo2_Log430
+# Labo 3 - Architecture RESTful avec FastAPI & React
 
-1. L’utilisation avec Docker.
-2. L’utilisation via un **environnement virtuel Python** (venv).
-3. Un lien avec `app/main.py` comme point d’entrée de l’application.
-4. Des instructions pratiques pour l'utilisateur.
+## Description du projet
 
----
-**Gestionnaire de ventes – Application distribuée en console**
+Ce projet est une extension d'un système multi-magasins, ajoutant une couche d'API REST construite avec **FastAPI** pour le backend et **React.js** pour le frontend. Il respecte les principes du modèle **MVC**/éventuellement **hexagonal**, incluant la séparation claire entre la logique métier, les routes REST, la documentation, les tests, la CI/CD et l'authentification via **JWT**.
 
 ---
 
-## Modes d'exécution
-```bash
-# S'asssurer d'etre dans le bon dossier
-~/labo1_Log430$
+## Structure du projet
+
 ```
-### 1. Exécution avec Docker
-
-```bash
-docker-compose build
-docker-compose up
-````
+.
+├── backend
+│   ├── app
+│   │   ├── auth.py
+│   │   ├── employe.py
+│   │   ├── gestionnaire.py
+│   │   ├── responsable.py
+│   │   ├── models.py
+│   │   ├── schemas.py
+│   │   ├── database.py
+│   │   ├── router.py
+│   │   ├── init_db.py
+│   │   └── main.py
+│   ├── requirements.txt
+│   └── tests
+├── frontend
+│   ├── src
+│   │   ├── pages
+│   │   ├── components
+│   │   └── api
+│   ├── public
+│   └── package.json
+├── docker-compose.yml
+├── Dockerfile
+└── .github/workflows/ci.yml
+```
 
 ---
 
-### 2. Exécution en local avec Python et un environnement virtuel (venv)
+## Lancement du projet
 
-#### Prérequis :
+### Prérequis
 
-* Python 3.12
-* `pip`
+* Python 3.11
+* Node.js 20+
+* Docker (optionnel)
 
-#### Étapes :
+### Backend
 
 ```bash
-# Créer et activer un environnement virtuel
-python -m venv .venv
-source .venv/bin/activate  # Sur Windows: .venv\Scripts\activate
-
-# Installer les dépendances
-pip install --upgrade pip
+cd backend
+python -m venv venv
+source venv/bin/activate  # ou venv\Scripts\activate sous Windows
 pip install -r requirements.txt
-
-# Lancer l'application
-python app/main.py
+python app/init_db.py
+uvicorn app.main:app --reload
 ```
 
----
-
-## Lancer les tests
+### Frontend
 
 ```bash
-# Une fois dans le venv
-pytest
+cd frontend
+npm install
+npm run dev
 ```
+
+### Connexions utilisateurs
+
+| Rôle         | Nom utilisateur | Mot de passe |
+| ------------ | --------------- | ------------ |
+| employé      | employe         | 1234         |
+| gestionnaire | gestionnaire    | abcd         |
+| responsable  | responsable     | admin        |
+
+Chaque rôle a accès à des composants différents sur l'interface frontend.
 
 ---
 
-## Linting (Analyse statique)
+## Fonctionnalités REST & Cas d'usage
 
+* **UC1** : Générer un rapport consolidé des ventes
+* **UC2** : Consulter le stock d'un magasin spécifique
+* **UC3** : Visualiser les performances globales des magasins
+* **UC4** : Mettre à jour les informations d'un produit
 
-Ce projet utilise [Ruff](https://docs.astral.sh/ruff/) pour l’analyse statique du code :
+---
+
+## Authentification & Sécurité
+
+* Auth via **JWT**
+* CORS activé (frontend local : `http://localhost:5173`)
+* Middleware pour vérifier les tokens
+
+---
+
+## Documentation Swagger
+
+Accessible localement via [http://localhost:8000/docs](http://localhost:8000/docs)
+
+Chaque endpoint y est documenté avec :
+
+* méthodes HTTP
+* formats d'entrée/sortie
+* codes d'erreurs standardisés
+* exemples de requêtes
+
+---
+
+## Lint & Tests
+
+### Backend
 
 ```bash
-# Vérifier le code
-ruff check .
+cd backend
+ruff check .     # Linter Python
+pytest           # Tests automatisés avec base de données
+```
 
-# Corriger automatiquement les erreurs détectées
-ruff check . --fix
+### Frontend
+
+```bash
+cd frontend
+npm run lint     # ESLint
 ```
 
 ---
 
-## Structure des dossiers
+## CI/CD
 
-| Dossier  | Contenu                  |
-| -------- | ------------------------ |
-| `app/`   | Code source principal    |
-| `tests/` | Tests unitaires          |
-| `ADR/`   | Décisions d'architecture |
-| `UML/`   | Diagrammes de conception |
-| `docs/`  | Documentation technique  |
+Le fichier `.github/workflows/ci.yml` contient la pipeline GitHub Actions :
 
----
-
-## Choix technologiques
-
-
-| Outil      | Rôle / Justification                          |
-| ---------- | --------------------------------------------- |
-| Python     | Langage principal                             |
-| SQLAlchemy | ORM robuste et flexible                       |
-| PostgreSQL | Base de données fiable                        |
-| Docker     | Exécution isolée, environnement reproductible |
-| Ruff       | Lint rapide et moderne pour Python            |
+1. Lint backend
+2. Test backend
+3. Init DB + lancement backend via `uvicorn`
+4. Lint frontend
+5. Build + tests frontend
 
 ---
 
-## Makefile
+## Dockerisation
 
-Pour automatiser certaines tâches :
+### Lancer le projet complet via Docker
 
-```makefile
-lint:
-	ruff check .
-
-lint-fix:
-	ruff check . --fix
-
-test:
-	pytest
+```bash
+docker-compose up --build
 ```
+
+Accessible sur :
+
+* Backend : `http://localhost:8000`
+* Frontend : `http://localhost:5173`
+
+---
+
+## Bonnes pratiques REST adoptées
+
+* Structure URI RESTful :
+
+  * `/api/products` (GET, POST)
+  * `/api/products/{id}` (GET, PUT, DELETE)
+  * `/api/magasins/{id}/stock`
+* Pas de verbes dans les URI
+* Codes HTTP clairs : 200, 201, 400, 401, 404, 500
+* Messages d'erreurs JSON :
+
+```json
+{
+  "timestamp": "2025-06-02T10:21:00Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Le champ 'name' est requis.",
+  "path": "/api/products"
+}
+```
+
+* Versionnage d'API (prévu pour `/api/v1/...`)
+
+---
+
+##  Travaux du Labo 3 réalisés
+
+1. **API REST** : tous les cas d'usage implémentés (voir UC ci-dessus)
+2. **Documentation Swagger** complète
+3. **Sécurité JWT** + CORS configuré
+4. **Tests automatisés** backend (pytest) + CI/CD
+5. **Déploiement Docker** fonctionnel
+6. **Respect des bonnes pratiques REST** : URI, statuts, JSON, etc.
+7. **Filtrage, tri et pagination** à implémenter au besoin via query params
+
+---
 
