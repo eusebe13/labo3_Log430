@@ -20,7 +20,7 @@
           "raw": "{\n  \"nom\": \"Bob\",\n  \"mot_de_passe\": \"1234\"\n}"
         },
         "url": {
-          "raw": "http://localhost:8000/connexion",
+          "raw": "http://localhost:8000/api/v1/connexion",
           "host": [
             "localhost"
           ],
@@ -36,7 +36,7 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "http://localhost:8000/employe/produits",
+          "raw": "http://localhost:8000/api/v1/employe/produits",
           "host": [
             "localhost"
           ],
@@ -67,7 +67,7 @@
           "raw": "{\n  \"produits\": [\n    {\n      \"produit_id\": 1,\n      \"quantite\": 2\n    },\n    {\n      \"produit_id\": 3,\n      \"quantite\": 1\n    }\n  ]\n}"
         },
         "url": {
-          "raw": "http://localhost:8000/employe/acheter/1",
+          "raw": "http://localhost:8000/api/v1/employe/acheter/1",
           "host": [
             "localhost"
           ],
@@ -91,7 +91,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8000/employe/stock/1/magasin/1",
+          "raw": "http://localhost:8000/api/v1/employe/stock/1/magasin/1",
           "host": [
             "localhost"
           ],
@@ -111,7 +111,7 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "http://localhost:8000/employe/magasin/2/produits",
+          "raw": "http://localhost:8000/api/v1/employe/magasin/2/produits",
           "host": [
             "localhost"
           ],
@@ -130,7 +130,7 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "http://localhost:8000/employe/stockcentral/produits",
+          "raw": "http://localhost:8000/api/v1/employe/stockcentral/produits",
           "host": [
             "localhost"
           ],
@@ -148,7 +148,7 @@
       "request": {
         "method": "POST",
         "url": {
-          "raw": "http://localhost:8000/employe/reapprovisionner/produit/1/quantite/5/magasin/1",
+          "raw": "http://localhost:8000/api/v1/employe/reapprovisionner/produit/1/quantite/5/magasin/1",
           "host": [
             "localhost"
           ],
@@ -181,7 +181,7 @@
           "raw": "{\n  \"region\": \"Montr\\u00e9al\"\n}"
         },
         "url": {
-          "raw": "http://localhost:8000/gestionnaire/rapports",
+          "raw": "http://localhost:8000/api/v1/gestionnaire/rapports",
           "host": [
             "localhost"
           ],

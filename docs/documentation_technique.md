@@ -68,3 +68,7 @@
 ## Swagger:
 ![screenshot swagger 1](image/image.png)
 ![screenshot swagger 2](image/image-1.png)
+---
+
+## Exemple de requetes/reponses:
+![GET/api/v1/employe/produits](image/get-produits.png)
