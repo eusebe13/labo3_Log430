@@ -18,8 +18,7 @@ origins = [
     "http://localhost",
     "http://localhost:8000",
     "http://localhost:5173",
-    "http://localhost:5173/employe/",
-    "*"
+    # "*"
 ]
 
 # Ajout du middleware CORS *avant tout autre ajout*

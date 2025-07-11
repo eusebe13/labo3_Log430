@@ -69,9 +69,9 @@ npm run dev
 
 | Rôle         | Nom utilisateur | Mot de passe |
 | ------------ | --------------- | ------------ |
-| employé      | employe         | 1234         |
-| gestionnaire | gestionnaire    | abcd         |
-| responsable  | responsable     | admin        |
+| employé      | Bob        | 1234        |
+| gestionnaire | Alice      | admin       |
+| responsable  | Charlie    | root        |
 
 Chaque rôle a accès à des composants différents sur l'interface frontend.
 
@@ -157,9 +157,9 @@ Accessible sur :
 
 * Structure URI RESTful :
 
-  * `/api/products` (GET, POST)
-  * `/api/products/{id}` (GET, PUT, DELETE)
-  * `/api/magasins/{id}/stock`
+  * `/api/v1/produits` (GET, POST)
+  * `/api/v1/produits/{id}` (GET, PUT, DELETE)
+  * `/api/v1/magasins/{id}/produits`
 * Pas de verbes dans les URI
 * Codes HTTP clairs : 200, 201, 400, 401, 404, 500
 * Messages d'erreurs JSON :
@@ -170,7 +170,7 @@ Accessible sur :
   "status": 400,
   "error": "Bad Request",
   "message": "Le champ 'name' est requis.",
-  "path": "/api/products"
+  "path": "/api/v1/products"
 }
 ```
 
