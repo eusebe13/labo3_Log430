@@ -1,15 +1,29 @@
 @startuml deployment-pos
 
-node "Navigateur Web (Client)" {
-  component "Interface utilisateur\n(Vite.js)"
+!define RECTANGLE class
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment center
+
+' Clients
+node "Navigateur Web\n(Client)" {
+  component "Interface utilisateur\n(React + Vite)"
 }
 
-node "Serveur Web" {
-  component "Backend POS\n(Python - FastAPI)"
-  database "Base de données\n(PostgreSQL)" as DB
+' CI/CD Runner
+node "GitHub Actions\nCI/CD Pipeline" {
+  component "Lint, Test, Build,\nDocker Push"
 }
 
-"Interface utilisateur\n(Vite.js)" --> "Backend POS\n(Python - FastAPI)" : HTTP/REST API
-"Backend POS\n(Python - FastAPI)" --> DB : ORM (SQLAlchemy)
+' Serveur applicatif
+node "Serveur Web\n(contenerisé Docker)" {
+  component "Backend API\n(FastAPI - Python)"
+  database "PostgreSQL\nBase de données" as DB
+  component "Frontend static\n(dist/ via Nginx ou Vite dev)"
+}
+
+' Flux
+"Interface utilisateur\n(React + Vite)" --> "Backend API\n(FastAPI - Python)" : HTTP (CORS + JWT)
+"Backend API\n(FastAPI - Python)" --> DB : ORM (SQLAlchemy)
+"GitHub Actions\nCI/CD Pipeline" --> "Serveur Web\n(contenerisé Docker)" : Docker Push / Pull
 
 @enduml

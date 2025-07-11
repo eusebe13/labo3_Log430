@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8000/employe';
+const BASE_URL = 'http://localhost:8000/api/v1/employe';
 
 /**
  * Récupère tous les produits disponibles dans tous les magasins.

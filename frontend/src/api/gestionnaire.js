@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8000/gestionnaire';
+const BASE_URL = 'http://localhost:8000/api/v1/gestionnaire';
 
 // Obtenir un rapport consolidé des ventes
 export const getRapportConsolide = async () => {

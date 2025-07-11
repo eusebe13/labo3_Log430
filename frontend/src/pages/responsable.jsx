@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   consulterStockCentral,
   mettreAJourProduit,
@@ -17,6 +18,13 @@ const Responsable = () => {
   const [alertes, setAlertes] = useState([]);
   const [produitsMagasin, setProduitsMagasin] = useState([]);
   const [magasinId, setMagasinId] = useState('');
+  const navigate = useNavigate();
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    if (role !== 'responsable') {
+      navigate(`/${role}`);
+    }
+  }, [navigate]);
 
   const chargerDonnees = async () => {
     const stock = await consulterStockCentral();

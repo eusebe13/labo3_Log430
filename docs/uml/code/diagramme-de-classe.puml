@@ -1,54 +1,58 @@
-@startuml class-pos
+@startuml
+class Utilisateur {
+  +id: int
+  +nom: str
+  +mot_de_passe: str
+  +role: RoleEnum
+}
 
-class Produit {
-  - id: int
-  - nom: string
-  - categorie: string
-  - prix: float
-  - stock: int
-  + mettreAJourStock(qte: int): void
+enum RoleEnum {
+  employe
+  gestionnaire
+  responsable
+}
+
+class Product {
+  +id: int
+  +name: str
+  +price: float
+  +category: str
 }
 
 class Magasin {
-  - id: int
-  - nom: string
-  - region: string
-  + ajouterProduit(produit: Produit): void
-  + supprimerProduit(produitId: int): void
+  +id: int
+  +nom: str
+  +region: str
 }
 
-class Maisonmere {
-  - id: int
-  - nom: string
-  - adresse: string
-  + ajouterMagasin(magasin: Magasin): void
-  + supprimerMagasin(magasinId: int): void
-}
-
-class Utilisateur {
-  - id: int
-  - nom: string
-  - role : string
-  - motDePasse: string
-  + seConnecter(): boolean
-  + seDeconnecter(): void
+class ProduitParMagasin {
+  +produit_id: int
+  +magasin_id: int
+  +quantite: int
 }
 
 class Vente {
-  - id: int
-  - date: datetime
-  - total: float
-  + calculerTotal(): float
+  +id: int
+  +produit_id: int
+  +magasin_id: int
+  +quantite: int
+  +prix_total: float
+  +date: datetime
 }
 
-' === Relations ===
+class Reaprovisionnement {
+  +id: int
+  +produit_id: int
+  +magasin_id: int
+  +quantite: int
+  +approuved: bool
+}
 
-Maisonmere "1" o-- "*" Magasin : gère
-Magasin "1" o-- "*" Produit : contient
-Magasin "1" --> "*" Vente : enregistre
-Produit "1" --> "*" Vente : est_vendu
-Utilisateur "*" --> "1" Magasin : travaille
-Utilisateur "*" --> "1" Maisonmere : travaille
-Vente "*" --> "1" Utilisateur : effectuée_par
-
+Utilisateur --> RoleEnum
+Magasin "1" -- "0..*" ProduitParMagasin
+Product "1" -- "0..*" ProduitParMagasin
+Product "1" -- "0..*" Vente
+Magasin "1" -- "0..*" Vente
+Product "1" -- "0..*" Reaprovisionnement
+Magasin "1" -- "0..*" Reaprovisionnement
 @enduml

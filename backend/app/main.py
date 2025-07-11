@@ -31,7 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router, tags=["Authentification"])
-app.include_router(employe_router, prefix="/employe", tags=["Employe"])
-app.include_router(responsable_router, prefix="/responsable", tags=["Responsable"])
-app.include_router(gestionnaire_router, prefix="/gestionnaire", tags=["Gestionnaire"])
+app.include_router(auth_router, prefix="/api/v1",tags=["Authentification"])
+app.include_router(employe_router, prefix="/api/v1/employe", tags=["Employe"])
+app.include_router(responsable_router, prefix="/api/v1/responsable", tags=["Responsable"])
+app.include_router(gestionnaire_router, prefix="/api/v1/gestionnaire", tags=["Gestionnaire"])

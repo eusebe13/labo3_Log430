@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   consulterProduits,
   acheterProduits,
@@ -10,7 +11,16 @@ import {
 import Header from '../components/header';
 
 const Employe = () => {
-  const [output, setOutput] = useState('Testez les fonctionnalités ci-dessous');
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    if (role !== 'employe') {
+      navigate(`/${role}`);
+    }
+  }, [navigate]);
+
+  const [output, setOutput] = useState(' ');
 
   const afficherProduits = async () => {
     const produits = await consulterProduits();

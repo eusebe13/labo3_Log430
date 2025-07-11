@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8000/responsable';
+const BASE_URL = 'http://localhost:8000/api/v1/responsable';
 
 // Consulter le stock central
 export const consulterStockCentral = async () => {

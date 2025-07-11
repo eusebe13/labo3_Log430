@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
@@ -13,7 +13,6 @@ from app.schemas import UpdateChampProduit
 
 router = APIRouter()
 
-
 def get_db():
     db = SessionLocal()
     try:
@@ -21,20 +20,21 @@ def get_db():
     finally:
         db.close()
 
-
-@router.get("/stock")
+@router.get("/stock", status_code=status.HTTP_200_OK)
 def consulter_stock(db: Session = Depends(get_db)):
-    produits = db.query(Product).all()
-    return [
-        {
-            "id": p.id,
-            "name": p.name,
-            "stock_central": p.stock_central.quantite if p.stock_central else 0
-        } for p in produits
-    ]
+    try:
+        produits = db.query(Product).all()
+        return [
+            {
+                "id": p.id,
+                "name": p.name,
+                "stock_central": p.stock_central.quantite if p.stock_central else 0
+            } for p in produits
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur interne : {str(e)}")
 
-
-@router.put("/produits/{produit_id}")
+@router.put("/produits/{produit_id}", status_code=status.HTTP_200_OK)
 def mettre_a_jour_produit(produit_id: int, data: UpdateChampProduit, db: Session = Depends(get_db)):
     produit = db.query(Product).get(produit_id)
     if not produit:
@@ -45,16 +45,15 @@ def mettre_a_jour_produit(produit_id: int, data: UpdateChampProduit, db: Session
 
     setattr(produit, data.champ, data.valeur)
 
-    # Synchroniser la mise à jour dans tous les stocks de magasin
     for stock in produit.produit_par_magasin:
         setattr(stock.produit, data.champ, data.valeur)
 
     db.commit()
     db.refresh(produit)
+
     return {"message": f"Produit {produit.name} mis à jour : {data.champ} = {data.valeur}"}
 
-
-@router.get("/reapprovisionnements")
+@router.get("/reapprovisionnements", status_code=status.HTTP_200_OK)
 def get_demandes_reapprovisionnement(db: Session = Depends(get_db)):
     demandes = db.query(Reaprovisionnement).all()
     return [
@@ -67,8 +66,7 @@ def get_demandes_reapprovisionnement(db: Session = Depends(get_db)):
         } for d in demandes
     ]
 
-
-@router.post("/reapprovisionner/{reappro_id}/approuver")
+@router.post("/reapprovisionner/{reappro_id}/approuver", status_code=status.HTTP_200_OK)
 def approuver_reapprovisionnement(reappro_id: int, db: Session = Depends(get_db)):
     demande = db.query(Reaprovisionnement).get(reappro_id)
     if not demande:
@@ -84,7 +82,8 @@ def approuver_reapprovisionnement(reappro_id: int, db: Session = Depends(get_db)
         )
 
     stock_magasin = db.query(ProduitParMagasin).filter_by(
-        produit_id=demande.produit_id, magasin_id=demande.magasin_id
+        produit_id=demande.produit_id,
+        magasin_id=demande.magasin_id
     ).first()
 
     stock_central.quantite -= demande.quantite
@@ -104,8 +103,7 @@ def approuver_reapprovisionnement(reappro_id: int, db: Session = Depends(get_db)
         "message": f"{demande.quantite} unités de {demande.produit.name} transférées à {demande.magasin.nom}"
     }
 
-
-@router.post("/reapprovisionner/{reappro_id}/refuser")
+@router.post("/reapprovisionner/{reappro_id}/refuser", status_code=status.HTTP_200_OK)
 def refuser_reapprovisionnement(reappro_id: int, db: Session = Depends(get_db)):
     demande = db.query(Reaprovisionnement).get(reappro_id)
     if not demande:
@@ -118,8 +116,7 @@ def refuser_reapprovisionnement(reappro_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Demande de réapprovisionnement refusée."}
 
-
-@router.delete("/reapprovisionner/{reappro_id}")
+@router.delete("/reapprovisionner/{reappro_id}", status_code=status.HTTP_204_NO_CONTENT)
 def supprimer_reapprovisionnement(reappro_id: int, db: Session = Depends(get_db)):
     demande = db.query(Reaprovisionnement).get(reappro_id)
     if not demande:
@@ -127,14 +124,14 @@ def supprimer_reapprovisionnement(reappro_id: int, db: Session = Depends(get_db)
 
     db.delete(demande)
     db.commit()
-    return {"message": "Demande de réapprovisionnement supprimée."}
+    return
 
-
-@router.get("/magasin/{magasin_id}/produits")
+@router.get("/magasin/{magasin_id}/produits", status_code=status.HTTP_200_OK)
 def get_produits_par_magasin(magasin_id: int, db: Session = Depends(get_db)):
     stocks = db.query(ProduitParMagasin).filter_by(magasin_id=magasin_id).all()
     if not stocks:
-        return {"message": "Aucun produit trouvé pour ce magasin."}
+        raise HTTPException(status_code=404, detail="Aucun produit trouvé pour ce magasin.")
+
     return [
         {
             "produit_id": s.produit_id,
@@ -143,8 +140,7 @@ def get_produits_par_magasin(magasin_id: int, db: Session = Depends(get_db)):
         } for s in stocks
     ]
 
-
-@router.get("/alertes-rupture")
+@router.get("/alertes-rupture", status_code=status.HTTP_200_OK)
 def get_alertes_rupture(db: Session = Depends(get_db)):
     alertes = db.query(AlerteRupture).filter_by(regler=False).all()
     return [

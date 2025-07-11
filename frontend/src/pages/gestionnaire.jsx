@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getRapportConsolide,
   getDashboard,
@@ -13,6 +14,7 @@ const Gestionnaire = () => {
   const [rapports, setRapports] = useState([]);
   const [region, setRegion] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   // Chargement initial des données
   useEffect(() => {
@@ -20,6 +22,15 @@ const Gestionnaire = () => {
     fetchDashboard();
     fetchRapports();
   }, []);
+
+  
+  
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    if (role !== 'gestionnaire') {
+      navigate(`/${role}`);
+    }
+  }, [navigate]);
 
   const fetchRapportConsolide = async () => {
     const data = await getRapportConsolide();
