@@ -11,10 +11,10 @@ from app.main import app
 client = TestClient(app)
 
 def test_connexion_valide():
-    response = client.post("/connexion", json={"nom": "Bob", "mot_de_passe": "1234"})
+    response = client.post("/api/v1/connexion", json={"nom": "Bob", "mot_de_passe": "1234"})
     assert response.status_code == 200
     assert "token" in response.json()
 
 def test_connexion_invalide():
-    response = client.post("/connexion", json={"nom": "fake", "mot_de_passe": "wrong"})
+    response = client.post("/api/v1/connexion", json={"nom": "fake", "mot_de_passe": "wrong"})
     assert response.status_code == 401
