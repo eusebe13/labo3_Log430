@@ -2,7 +2,7 @@
 
 ## Description du projet
 
-Ce projet est une extension d'un système multi-magasins, ajoutant une couche d'API REST construite avec **FastAPI** pour le backend et **React.js** pour le frontend. Il respecte les principes du modèle **MVC**/éventuellement **hexagonal**, incluant la séparation claire entre la logique métier, les routes REST, la documentation, les tests, la CI/CD et l'authentification via **JWT**.
+Ce projet constitue une extension d’un système de gestion multi-magasins, enrichi par une API REST développée avec **FastAPI** côté backend, et **React.js** côté frontend. Il respecte les principes du modèle **MVC** (voire **hexagonal**), avec une séparation claire entre la logique métier, les routes REST, la documentation, les tests, la CI/CD, ainsi qu'une authentification sécurisée via **JWT**.
 
 ---
 
@@ -23,6 +23,7 @@ Ce projet est une extension d'un système multi-magasins, ajoutant une couche d'
 │   │   ├── init_db.py
 │   │   └── main.py
 │   ├── requirements.txt
+│   ├── Dockerfile
 │   └── tests
 ├── frontend
 │   ├── src
@@ -30,9 +31,10 @@ Ce projet est une extension d'un système multi-magasins, ajoutant une couche d'
 │   │   ├── components
 │   │   └── api
 │   ├── public
+│   ├── Dockerfile
 │   └── package.json
 ├── docker-compose.yml
-├── Dockerfile
+├── docs
 └── .github/workflows/ci.yml
 ```
 
@@ -44,9 +46,9 @@ Ce projet est une extension d'un système multi-magasins, ajoutant une couche d'
 
 * Python 3.11
 * Node.js 20+
-* Docker (optionnel)
+* Docker (facultatif mais recommandé)
 
-### Backend
+### Démarrer le backend
 
 ```bash
 cd backend
@@ -57,7 +59,7 @@ python app/init_db.py
 uvicorn app.main:app --reload
 ```
 
-### Frontend
+### Démarrer le frontend
 
 ```bash
 cd frontend
@@ -65,104 +67,122 @@ npm install
 npm run dev
 ```
 
-### Connexions utilisateurs
+### Comptes utilisateurs
 
-| Rôle         | Nom utilisateur | Mot de passe |
-| ------------ | --------------- | ------------ |
-| employé      | Bob        | 1234        |
-| gestionnaire | Alice      | admin       |
-| responsable  | Charlie    | root        |
+| Rôle         | Nom d’utilisateur | Mot de passe |
+| ------------ | ----------------- | ------------ |
+| Employé      | Bob               | 1234         |
+| Gestionnaire | Alice             | admin        |
+| Responsable  | Charlie           | root         |
 
-Chaque rôle a accès à des composants différents sur l'interface frontend.
+Chaque rôle dispose d’une interface dédiée avec des permissions spécifiques.
 
 ---
 
-## Fonctionnalités REST & Cas d'usage
+## Cas d’usage principaux
 
 * **UC1** : Générer un rapport consolidé des ventes
-* **UC2** : Consulter le stock d'un magasin spécifique
+* **UC2** : Consulter le stock d’un magasin
 * **UC3** : Visualiser les performances globales des magasins
-* **UC4** : Mettre à jour les informations d'un produit
+* **UC4** : Mettre à jour les informations d’un produit
 
 ---
 
 ## Authentification & Sécurité
 
-* Auth via **JWT**
-* CORS activé (frontend local : `http://localhost:5173`)
-* Middleware pour vérifier les tokens
+* Authentification via **JWT**
+* Middleware de protection des routes privées
+* **CORS** activé (autorise l’accès depuis `http://localhost:5173`)
 
 ---
 
 ## Documentation Swagger
 
-Accessible localement via [http://localhost:8000/docs](http://localhost:8000/docs)
+Accès via : [http://localhost:8000/docs](http://localhost:8000/docs)
 
 Chaque endpoint y est documenté avec :
 
-* méthodes HTTP
-* formats d'entrée/sortie
-* codes d'erreurs standardisés
-* exemples de requêtes
+* Les méthodes HTTP disponibles
+* Les formats d’entrée/sortie attendus
+* Les codes de réponse standardisés
+* Des exemples de requêtes
 
 ---
 
-## Lint & Tests
+## Linting & Tests
 
 ### Backend
 
 ```bash
 cd backend
-ruff check .     # Linter Python
-pytest           # Tests automatisés avec base de données
+ruff check .     # Analyse statique (lint)
+pytest           # Tests automatisés (avec base de données)
 ```
 
 ### Frontend
 
 ```bash
 cd frontend
-npm run lint     # ESLint
+npm run lint     # Vérification de style avec ESLint
 ```
 
 ---
 
-## CI/CD
+## CI/CD avec GitHub Actions
 
-Le fichier `.github/workflows/ci.yml` contient la pipeline GitHub Actions :
+Le fichier `.github/workflows/ci.yml` contient la pipeline CI/CD :
 
-1. Lint backend
-2. Test backend
-3. Init DB + lancement backend via `uvicorn`
-4. Lint frontend
+1. Lint du backend
+2. Tests backend (via Pytest)
+3. Initialisation de la base de données + exécution avec `uvicorn`
+4. Lint du frontend
 5. Build + tests frontend
 
 ---
 
 ## Dockerisation
 
-### Lancer le projet complet via Docker
+### Lancer tout le projet via Docker
 
 ```bash
 docker-compose up --build
 ```
 
-Accessible sur :
+#### ⚠ Problème fréquent : port 5432 déjà utilisé
 
-* Backend : `http://localhost:8000`
-* Frontend : `http://localhost:5173`
+Si le port `5432` est occupé par une autre instance de PostgreSQL sur votre machine, modifiez le port externe dans `docker-compose.yml` :
+
+```yaml
+ports:
+  - "5433:5432"  # Utiliser 5433 en externe
+```
+
+Ensuite, redémarrez proprement :
+
+```bash
+docker-compose down
+docker-compose up --build
+```
+
+---
+
+### Accès aux services
+
+* Backend : [http://localhost:8000](http://localhost:8000)
+* Frontend : [http://localhost:5173](http://localhost:5173)
 
 ---
 
 ## Bonnes pratiques REST adoptées
 
-* Structure URI RESTful :
+* URIs RESTful claires :
 
   * `/api/v1/produits` (GET, POST)
   * `/api/v1/produits/{id}` (GET, PUT, DELETE)
   * `/api/v1/magasins/{id}/produits`
-* Pas de verbes dans les URI
-* Codes HTTP clairs : 200, 201, 400, 401, 404, 500
-* Messages d'erreurs JSON :
+* Pas de verbes dans les chemins d’URL
+* Codes HTTP explicites : 200, 201, 400, 401, 404, 500
+* Réponses d’erreur structurées en JSON :
 
 ```json
 {
@@ -174,19 +194,18 @@ Accessible sur :
 }
 ```
 
-* Versionnage d'API (prévu pour `/api/v1/...`)
+* Versionnage d’API : toutes les routes sont préfixées par `/api/v1/...`
 
 ---
 
-##  Travaux du Labo 3 réalisés
+## Travaux réalisés pour le Labo 3
 
-1. **API REST** : tous les cas d'usage implémentés (voir UC ci-dessus)
-2. **Documentation Swagger** complète
-3. **Sécurité JWT** + CORS configuré
-4. **Tests automatisés** backend (pytest) + CI/CD
-5. **Déploiement Docker** fonctionnel
-6. **Respect des bonnes pratiques REST** : URI, statuts, JSON, etc.
-7. **Filtrage, tri et pagination** à implémenter au besoin via query params
+1. **Implémentation complète de l’API REST**
+2. **Documentation Swagger** générée automatiquement
+3. **Sécurité via JWT** et gestion des CORS
+4. **Tests automatisés** avec `pytest` + pipeline CI/CD
+5. **Conteneurisation Docker** du projet complet
+6. **Application des conventions REST**
+7. **Préparation pour le tri, filtrage et pagination** via paramètres de requête
 
 ---
-

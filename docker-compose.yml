@@ -29,7 +29,11 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: app_db
     ports:
-      - "5432:5432"
+      - "5433:5432"  # ← Port externe 5433 → port interne 5432
+      # apres
+      # docker-compose down
+      # docker-compose up --build
+
     volumes:
       - pgdata:/var/lib/postgresql/data
 
